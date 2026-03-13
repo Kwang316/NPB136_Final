@@ -1,0 +1,1594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>The Informatics Journey | UC Davis Health</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Nunito:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --blue: #022851;
+    --blue-mid: #0a3d70;
+    --blue-light: #1a5fa8;
+    --gold: #FFBF00;
+    --gold-light: #FFD84D;
+    --gold-dim: #c49200;
+    --cyan: #00d4ff;
+    --cyan-dim: #0099bb;
+    --white: #f0f6ff;
+    --text-dim: #8faece;
+    --card-bg: rgba(10,35,70,0.75);
+    --border: rgba(255,191,0,0.25);
+    --glow: 0 0 20px rgba(0,212,255,0.35);
+    --gold-glow: 0 0 20px rgba(255,191,0,0.4);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--blue);
+    color: var(--white);
+    font-family: 'Nunito', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ── PROGRESS TRACKER ─────────────────────────────── */
+  #progress-tracker {
+    position: fixed;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .pt-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 4px 0;
+  }
+  .pt-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--text-dim);
+    background: transparent;
+    transition: all .4s ease;
+    flex-shrink: 0;
+  }
+  .pt-item.active .pt-dot {
+    background: var(--gold);
+    border-color: var(--gold);
+    box-shadow: var(--gold-glow);
+    transform: scale(1.4);
+  }
+  .pt-line {
+    width: 2px; height: 32px;
+    background: rgba(143,174,206,0.3);
+    margin-left: 5px;
+  }
+  .pt-line.filled { background: var(--gold); }
+  .pt-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--text-dim);
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateX(-8px);
+    transition: all .3s ease;
+    pointer-events: none;
+  }
+  .pt-item:hover .pt-label,
+  .pt-item.active .pt-label {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--gold);
+  }
+
+  /* ── HERO ─────────────────────────────────────────── */
+  #hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 60% 40%, #0a3d70 0%, #010f24 70%);
+    padding: 60px 20px;
+  }
+  #hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 20% 80%, rgba(0,212,255,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 20%, rgba(255,191,0,0.06) 0%, transparent 50%);
+  }
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(255,191,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,191,0,0.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+    animation: gridShift 20s linear infinite;
+  }
+  @keyframes gridShift { from{transform:translate(0,0)} to{transform:translate(60px,60px)} }
+  .hero-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+    padding: 6px 16px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    animation: fadeUp .8s ease forwards;
+    opacity: 0;
+  }
+  .hero-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.2rem, 6vw, 5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    animation: fadeUp .8s .15s ease forwards;
+    opacity: 0;
+  }
+  .hero-title span { color: var(--gold); display: block; }
+  .hero-sub {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    color: var(--text-dim);
+    max-width: 600px;
+    margin: 20px auto 0;
+    line-height: 1.7;
+    animation: fadeUp .8s .3s ease forwards;
+    opacity: 0;
+  }
+  .hero-patient {
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 24px;
+    backdrop-filter: blur(12px);
+    animation: fadeUp .8s .45s ease forwards;
+    opacity: 0;
+  }
+  .avatar {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-light), var(--cyan-dim));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    border: 2px solid var(--gold);
+  }
+  .hero-patient-text { text-align: left; }
+  .hero-patient-text strong { font-family: 'Syne', sans-serif; color: var(--gold); display: block; }
+  .hero-patient-text span { font-size: .85rem; color: var(--text-dim); }
+  .scroll-hint {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    font-size: .75rem; color: var(--text-dim);
+    letter-spacing: 2px; font-family: 'Space Mono', monospace;
+    animation: fadeUp .8s .7s ease forwards; opacity: 0;
+  }
+  .scroll-arrow {
+    width: 20px; height: 28px;
+    border: 2px solid var(--text-dim);
+    border-radius: 10px;
+    position: relative;
+  }
+  .scroll-arrow::after {
+    content: '';
+    position: absolute;
+    top: 5px; left: 50%; transform: translateX(-50%);
+    width: 3px; height: 8px;
+    background: var(--gold);
+    border-radius: 2px;
+    animation: scrollBounce 1.5s ease-in-out infinite;
+  }
+  @keyframes scrollBounce { 0%,100%{top:5px} 50%{top:12px} }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+  /* ── SCENE WRAPPER ──────────────────────────────────── */
+  .scene {
+    min-height: 100vh;
+    display: flex;
+    align-items: stretch;
+    position: relative;
+    overflow: hidden;
+  }
+  .scene-inner {
+    display: flex;
+    width: 100%;
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 80px 60px 80px 100px;
+    gap: 40px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* Alternating backgrounds */
+  .scene:nth-child(odd) { background: linear-gradient(135deg, #010f24 0%, #02163a 100%); }
+  .scene:nth-child(even) { background: linear-gradient(135deg, #02163a 0%, #0a2850 100%); }
+  .scene::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at var(--gx,70%) var(--gy,30%), rgba(0,212,255,0.06) 0%, transparent 50%);
+  }
+  #scene1::before { --gx:80%; --gy:20%; }
+  #scene2::before { --gx:20%; --gy:70%; }
+  #scene3::before { --gx:75%; --gy:60%; }
+  #scene4::before { --gx:30%; --gy:30%; }
+  #scene5::before { --gx:70%; --gy:50%; }
+  #scene6::before { --gx:25%; --gy:40%; background-image: radial-gradient(circle at 25% 40%, rgba(255,191,0,0.06) 0%, transparent 50%); }
+
+  /* Scene number */
+  .scene-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--cyan);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .scene-num::after { content: ''; flex: 1; height: 1px; background: var(--cyan); opacity: .3; }
+
+  .scene-content { flex: 1; max-width: 520px; }
+  .scene-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 8px;
+  }
+  .scene-title em { color: var(--gold); font-style: normal; }
+  .scene-subtitle {
+    font-family: 'Space Mono', monospace;
+    font-size: .75rem;
+    color: var(--gold-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .scene-body {
+    font-size: 1rem;
+    color: rgba(240,246,255,0.8);
+    line-height: 1.8;
+    margin-bottom: 28px;
+  }
+
+  /* ── SPOTLIGHT & AI BOX ─────────────────────────────── */
+  .info-cards { display: flex; flex-direction: column; gap: 14px; }
+  .spotlight-card {
+    background: rgba(0,212,255,0.07);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .spotlight-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--cyan);
+  }
+  .spotlight-card h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: .7rem;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .spotlight-card p { font-size: .88rem; color: var(--text-dim); line-height: 1.7; }
+  .spotlight-card .tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: .7rem;
+    background: rgba(0,212,255,0.12);
+    border: 1px solid rgba(0,212,255,0.3);
+    color: var(--cyan);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin: 4px 3px 0 0;
+  }
+
+  .ai-card {
+    background: rgba(255,191,0,0.07);
+    border: 1px solid rgba(255,191,0,0.3);
+    border-radius: 12px;
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+    animation: pulseGold 3s ease-in-out infinite;
+  }
+  @keyframes pulseGold {
+    0%,100%{ box-shadow: 0 0 0 rgba(255,191,0,0); }
+    50%{ box-shadow: 0 0 18px rgba(255,191,0,0.15); }
+  }
+  .ai-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--gold);
+  }
+  .ai-card h4 {
+    font-family: 'Space Mono', monospace;
+    font-size: .7rem;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .ai-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--gold);
+    animation: blink 1.2s ease-in-out infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+  .ai-card p { font-size: .88rem; color: var(--text-dim); line-height: 1.7; }
+
+  /* ── VISUAL PANEL ───────────────────────────────────── */
+  .scene-visual {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* PHONE MOCKUP */
+  .phone {
+    width: 240px;
+    background: #060e1e;
+    border-radius: 36px;
+    border: 2px solid rgba(255,191,0,0.3);
+    padding: 20px 14px;
+    box-shadow: 0 0 60px rgba(0,212,255,0.2), inset 0 0 20px rgba(0,0,0,.5);
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 10px; left: 50%; transform: translateX(-50%);
+    width: 60px; height: 6px;
+    background: #0a2850;
+    border-radius: 3px;
+  }
+  .phone-screen {
+    background: #0a1628;
+    border-radius: 24px;
+    overflow: hidden;
+    min-height: 380px;
+  }
+  .app-header {
+    background: var(--blue);
+    padding: 14px 14px 10px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .app-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: .75rem;
+    font-weight: 800;
+    color: var(--gold);
+  }
+  .app-logo span { color: var(--white); font-weight: 400; }
+  .app-time { margin-left: auto; font-family: 'Space Mono', monospace; font-size: .6rem; color: var(--text-dim); }
+  .app-body { padding: 14px; }
+  .app-greeting {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .app-greeting span { color: var(--gold); }
+  .app-sub { font-size: .65rem; color: var(--text-dim); margin-bottom: 14px; }
+  .chat-bubble {
+    background: rgba(0,212,255,0.1);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 12px 12px 12px 2px;
+    padding: 10px 12px;
+    font-size: .7rem;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    color: var(--white);
+    position: relative;
+  }
+  .chat-bubble.user {
+    background: rgba(255,191,0,0.1);
+    border-color: rgba(255,191,0,0.25);
+    border-radius: 12px 12px 2px 12px;
+    margin-left: 20px;
+    color: var(--gold-light);
+  }
+  .chat-sender { font-family: 'Space Mono',monospace; font-size: .55rem; color: var(--cyan); margin-bottom: 3px; }
+  .chat-sender.u { color: var(--gold-dim); }
+  .app-alert {
+    background: rgba(255,191,0,0.1);
+    border: 1px solid var(--gold-dim);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 10px;
+    font-size: .65rem;
+    line-height: 1.6;
+  }
+  .app-alert strong { color: var(--gold); display: block; margin-bottom: 2px; }
+  .severity-badge {
+    display: inline-block;
+    background: #f59e0b;
+    color: #000;
+    font-family: 'Space Mono',monospace;
+    font-size: .55rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+  }
+  .severity-badge.urgent { background: #ef4444; color: #fff; }
+
+  /* TABLET MOCKUP */
+  .tablet {
+    width: 320px;
+    background: #060e1e;
+    border-radius: 18px;
+    border: 2px solid rgba(255,191,0,0.25);
+    padding: 14px;
+    box-shadow: 0 0 60px rgba(0,212,255,0.15);
+  }
+  .tablet-screen {
+    background: #f8fafc;
+    border-radius: 10px;
+    overflow: hidden;
+    min-height: 380px;
+  }
+  .tablet-hdr {
+    background: var(--blue);
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .tablet-hdr .logo { font-family:'Syne',sans-serif; font-size:.75rem; font-weight:800; color:var(--gold); }
+  .tablet-hdr .logo span { color:#fff; font-weight:400; }
+  .t-body { padding: 14px; }
+  .t-title { font-family:'Syne',sans-serif; font-size:.9rem; font-weight:700; color:#1e293b; margin-bottom:12px; }
+  .t-field {
+    margin-bottom: 10px;
+  }
+  .t-field label { display:block; font-size:.6rem; font-weight:700; color:#64748b; letter-spacing:1px; text-transform:uppercase; margin-bottom:4px; }
+  .t-field .val {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 7px 10px;
+    font-size:.7rem;
+    color:#1e293b;
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .t-field .val.confirmed { border-color:#10b981; }
+  .t-field .val .chk { color:#10b981; font-size:.8rem; }
+  .rxnorm-badge {
+    font-family:'Space Mono',monospace;
+    font-size:.55rem;
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    color:#2563eb;
+    padding:2px 6px;
+    border-radius:4px;
+  }
+  .t-progress {
+    margin-top: 14px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+  }
+  .t-progress-fill {
+    background: linear-gradient(90deg, #022851, #1a5fa8);
+    height: 100%;
+    width: 45%;
+    border-radius: 4px;
+    animation: progressFill 2s ease forwards;
+  }
+  @keyframes progressFill { from{width:0} to{width:45%} }
+  .t-status { font-size:.6rem; color:#64748b; margin-top:4px; }
+
+  /* EXAM ROOM VISUAL */
+  .exam-visual {
+    width: 340px;
+    position: relative;
+  }
+  .ehr-screen {
+    background: #0a1628;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    padding: 14px;
+    width: 100%;
+  }
+  .ehr-hdr {
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px; margin-bottom: 12px;
+  }
+  .ehr-hdr h5 { font-family:'Syne',sans-serif; font-size:.8rem; font-weight:700; color:var(--gold); }
+  .ehr-hdr span { margin-left:auto; font-family:'Space Mono',monospace; font-size:.6rem; color:var(--cyan); }
+  .ehr-field { margin-bottom: 8px; }
+  .ehr-field label { display:block; font-family:'Space Mono',monospace; font-size:.55rem; color:var(--text-dim); letter-spacing:1px; text-transform:uppercase; margin-bottom:3px; }
+  .ehr-field .val { font-size:.75rem; color:var(--white); }
+  .ehr-field .val.highlight { color: var(--cyan); }
+  .mic-indicator {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,212,255,0.08);
+    border: 1px solid rgba(0,212,255,0.3);
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin-top: 12px;
+  }
+  .mic-icon { font-size: 1rem; }
+  .mic-text { font-size: .65rem; color: var(--cyan); }
+  .mic-wave {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .mic-wave span {
+    display: block;
+    width: 3px;
+    background: var(--cyan);
+    border-radius: 2px;
+    animation: wave 1s ease-in-out infinite;
+  }
+  .mic-wave span:nth-child(1){ height:8px; animation-delay:.0s; }
+  .mic-wave span:nth-child(2){ height:14px; animation-delay:.15s; }
+  .mic-wave span:nth-child(3){ height:10px; animation-delay:.3s; }
+  .mic-wave span:nth-child(4){ height:16px; animation-delay:.1s; }
+  .mic-wave span:nth-child(5){ height:8px; animation-delay:.25s; }
+  @keyframes wave { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(.4)} }
+
+  /* ALLERGY POPUP */
+  .allergy-popup {
+    position: absolute;
+    top: -10px; right: -20px;
+    width: 200px;
+    background: #1a0a00;
+    border: 1.5px solid #ef4444;
+    border-radius: 10px;
+    padding: 12px;
+    box-shadow: 0 0 24px rgba(239,68,68,0.35);
+    animation: popIn .5s .5s cubic-bezier(.17,.67,.4,1.2) both;
+    z-index: 10;
+  }
+  @keyframes popIn { from{opacity:0;transform:scale(.7) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+  .allergy-popup-hdr {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 8px;
+  }
+  .allergy-popup-hdr .warn-icon { font-size: 1rem; }
+  .allergy-popup-hdr h5 { font-family:'Syne',sans-serif; font-size:.7rem; font-weight:700; color:#ef4444; }
+  .allergy-popup p { font-size:.65rem; color:#fca5a5; line-height:1.6; }
+  .allergy-popup .drug { color:#fbbf24; font-weight:700; }
+  .allergy-dismiss {
+    display:block;
+    width:100%;
+    margin-top:8px;
+    background: rgba(239,68,68,0.2);
+    border: 1px solid rgba(239,68,68,0.5);
+    color: #ef4444;
+    font-family:'Space Mono',monospace;
+    font-size:.6rem;
+    padding:5px;
+    border-radius:5px;
+    cursor:pointer;
+    transition: background .2s;
+  }
+  .allergy-dismiss:hover { background:rgba(239,68,68,0.35); }
+
+  /* FHIR PLUG VISUAL */
+  .fhir-visual {
+    width: 340px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .fhir-node {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .fhir-node .icon { font-size: 1.4rem; flex-shrink: 0; }
+  .fhir-node h5 { font-family:'Syne',sans-serif; font-size:.8rem; font-weight:700; color:var(--white); }
+  .fhir-node p { font-size:.65rem; color:var(--text-dim); }
+  .fhir-connector {
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px; padding: 4px 0;
+  }
+  .fhir-line {
+    flex: 1;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    position: relative; overflow: hidden;
+  }
+  .fhir-line::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -30%;
+    width: 30%; height: 100%;
+    background: linear-gradient(90deg, transparent, #fff, transparent);
+    animation: dataFlow 1.5s linear infinite;
+  }
+  @keyframes dataFlow { from{left:-30%} to{left:130%} }
+  .fhir-plug {
+    font-size: 1.4rem;
+    animation: plugFloat 2s ease-in-out infinite;
+  }
+  @keyframes plugFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+  .loinc-box {
+    background: rgba(0,212,255,0.07);
+    border: 1px solid rgba(0,212,255,0.25);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-family: 'Space Mono', monospace;
+    font-size: .65rem;
+    color: var(--cyan);
+  }
+  .loinc-box .row { display:flex; justify-content:space-between; padding:3px 0; border-bottom:1px solid rgba(0,212,255,0.1); }
+  .loinc-box .row:last-child { border:none; }
+  .loinc-box .k { color: var(--text-dim); }
+  .loinc-box .v { color: var(--white); }
+
+  /* VAULT VISUAL */
+  .vault-visual {
+    width: 340px;
+  }
+  .vault-ring {
+    width: 260px; height: 260px;
+    margin: 0 auto;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid;
+    animation: spin linear infinite;
+  }
+  .ring-1 {
+    width: 260px; height: 260px;
+    border-color: rgba(0,212,255,0.15);
+    animation-duration: 20s;
+  }
+  .ring-2 {
+    width: 200px; height: 200px;
+    border-color: rgba(0,212,255,0.25);
+    border-style: dashed;
+    animation-duration: 14s;
+    animation-direction: reverse;
+  }
+  .ring-3 {
+    width: 140px; height: 140px;
+    border-color: rgba(255,191,0,0.3);
+    animation-duration: 9s;
+  }
+  @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  .vault-center {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--blue-mid), #0a3d70);
+    border: 2px solid var(--gold);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    box-shadow: var(--gold-glow);
+    z-index: 1;
+  }
+  .vault-center span { font-size: 1.4rem; }
+  .vault-center p { font-family:'Space Mono',monospace; font-size:.45rem; color:var(--gold); text-align:center; margin-top:2px; }
+  .orbit-dot {
+    position: absolute;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: rgba(0,212,255,0.15);
+    border: 1px solid rgba(0,212,255,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem;
+  }
+  .vault-legend {
+    display: flex; justify-content: center; gap: 16px;
+    margin-top: 14px;
+  }
+  .v-leg { text-align:center; }
+  .v-leg .dot { width:8px; height:8px; border-radius:50%; margin:0 auto 4px; }
+  .v-leg p { font-size:.6rem; color:var(--text-dim); font-family:'Space Mono',monospace; }
+
+  /* BILLING VISUAL */
+  .billing-visual {
+    width: 340px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .claim-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .claim-hdr {
+    background: rgba(255,191,0,0.08);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 14px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .claim-hdr h5 { font-family:'Syne',sans-serif; font-size:.8rem; font-weight:700; color:var(--gold); }
+  .status-badge {
+    font-family:'Space Mono',monospace; font-size:.55rem;
+    padding:2px 8px; border-radius:12px;
+    background:rgba(16,185,129,0.15); color:#10b981; border:1px solid rgba(16,185,129,0.4);
+  }
+  .status-badge.pending { background:rgba(245,158,11,0.15); color:#f59e0b; border-color:rgba(245,158,11,0.4); }
+  .claim-body { padding: 12px 14px; }
+  .code-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .code-row:last-child { border: none; }
+  .code-label {
+    font-family:'Space Mono',monospace; font-size:.6rem;
+    width: 60px; color: var(--text-dim); flex-shrink:0;
+  }
+  .code-val { font-family:'Space Mono',monospace; font-size:.7rem; color:var(--cyan); }
+  .code-desc { font-size:.65rem; color:var(--white); flex:1; text-align:right; }
+  .edi-flow {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: .65rem; color: var(--text-dim);
+  }
+  .edi-icon { font-size: 1.1rem; }
+  .edi-arrow { margin: 0 4px; color: var(--cyan); }
+
+  /* ── QUIZ ───────────────────────────────────────────── */
+  #quiz-section {
+    background: linear-gradient(135deg, #010f24 0%, #02163a 100%);
+    padding: 100px 60px 100px 100px;
+    position: relative;
+    overflow: hidden;
+  }
+  #quiz-section::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(255,191,0,0.05) 0%, transparent 60%);
+  }
+  .quiz-inner { max-width: 780px; margin: 0 auto; }
+  .quiz-head {
+    text-align: center;
+    margin-bottom: 50px;
+  }
+  .quiz-head h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
+    font-weight: 800;
+    margin-bottom: 10px;
+  }
+  .quiz-head h2 span { color: var(--gold); }
+  .quiz-head p { color: var(--text-dim); font-size: .95rem; }
+  .q-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    opacity: 0; transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .q-card.visible { opacity: 1; transform: translateY(0); }
+  .q-num {
+    font-family: 'Space Mono', monospace;
+    font-size: .65rem;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+  .q-text {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .q-options { display: flex; flex-direction: column; gap: 8px; }
+  .q-option {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(143,174,206,0.2);
+    border-radius: 8px;
+    padding: 11px 16px;
+    cursor: pointer;
+    font-size: .9rem;
+    color: var(--text-dim);
+    transition: all .25s ease;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .q-option:hover { border-color: var(--cyan); color: var(--white); background: rgba(0,212,255,0.05); }
+  .q-option.correct { border-color: #10b981; background: rgba(16,185,129,0.1); color: #10b981; pointer-events:none; }
+  .q-option.wrong { border-color: #ef4444; background: rgba(239,68,68,0.1); color: #ef4444; pointer-events:none; }
+  .q-option.disabled { opacity:.5; pointer-events:none; }
+  .q-option .opt-letter {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: .6rem;
+    flex-shrink: 0;
+  }
+  .q-feedback {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: .85rem;
+    display: none;
+  }
+  .q-feedback.show { display: block; }
+  .q-feedback.correct { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
+  .q-feedback.wrong { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
+
+  /* BADGE */
+  #badge-section {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    animation: fadeUp .8s ease forwards;
+  }
+  #badge-section.show { display: block; }
+  .badge-container {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .badge-hex {
+    width: 160px; height: 160px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+    animation: badgePop .6s cubic-bezier(.17,.67,.4,1.4) forwards;
+  }
+  @keyframes badgePop { from{transform:scale(0) rotate(-30deg)} to{transform:scale(1) rotate(0)} }
+  .badge-hex::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: conic-gradient(var(--gold), var(--cyan), var(--gold));
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+    animation: rotateBadge 8s linear infinite;
+  }
+  @keyframes rotateBadge { from{filter:hue-rotate(0deg)} to{filter:hue-rotate(360deg)} }
+  .badge-inner {
+    position: absolute;
+    width: 140px; height: 140px;
+    background: #010f24;
+    clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px;
+    z-index: 1;
+  }
+  .badge-inner span { font-size: 2rem; }
+  .badge-inner p {
+    font-family: 'Space Mono', monospace;
+    font-size: .45rem;
+    color: var(--gold);
+    letter-spacing: 1px;
+    text-align: center;
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+  .badge-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--gold);
+  }
+  .badge-sub { font-size: .85rem; color: var(--text-dim); }
+  .badge-stars { font-size: 1.1rem; letter-spacing: 4px; }
+  .quiz-cta {
+    background: var(--gold);
+    color: var(--blue);
+    border: none;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: .95rem;
+    padding: 12px 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 20px;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .quiz-cta:hover { transform: translateY(-2px); box-shadow: var(--gold-glow); }
+  .quiz-score {
+    font-family: 'Space Mono', monospace;
+    font-size: .8rem;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* ── SCENE TRANSITIONS ──────────────────────────────── */
+  .scene-content, .scene-visual { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+  .scene-content.in { opacity: 1; transform: translateY(0); }
+  .scene-visual.in { opacity: 1; transform: translateY(0); transition-delay: .15s; }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  footer {
+    background: #010f24;
+    border-top: 1px solid var(--border);
+    padding: 30px 60px;
+    text-align: center;
+    font-family: 'Space Mono', monospace;
+    font-size: .7rem;
+    color: var(--text-dim);
+  }
+  footer span { color: var(--gold); }
+
+  /* ── RESPONSIVE ─────────────────────────────────────── */
+  @media(max-width:900px) {
+    .scene-inner { flex-direction: column; padding: 60px 24px 60px 60px; }
+    .scene-visual { order: -1; }
+    .phone, .tablet, .exam-visual, .fhir-visual, .vault-visual, .billing-visual { width: min(100%, 320px); }
+    #progress-tracker { left: 8px; }
+    .pt-label { display: none; }
+    #quiz-section { padding: 60px 20px; }
+    footer { padding: 24px 20px; }
+  }
+  @media(max-width:600px) {
+    .scene-inner { padding: 50px 16px 50px 46px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress Tracker -->
+<nav id="progress-tracker" aria-label="Scene navigation">
+  <div class="pt-item active" data-section="hero" onclick="scrollTo('#hero')">
+    <div class="pt-dot"></div><span class="pt-label">Intro</span>
+  </div>
+  <div class="pt-line"></div>
+  <div class="pt-item" data-section="scene1" onclick="scrollTo('#scene1')">
+    <div class="pt-dot"></div><span class="pt-label">Digital Doorway</span>
+  </div>
+  <div class="pt-line"></div>
+  <div class="pt-item" data-section="scene2" onclick="scrollTo('#scene2')">
+    <div class="pt-dot"></div><span class="pt-label">Smart Check-In</span>
+  </div>
+  <div class="pt-line"></div>
+  <div class="pt-item" data-section="scene3" onclick="scrollTo('#scene3')">
+    <div class="pt-dot"></div><span class="pt-label">Augmented Exam</span>
+  </div>
+  <div class="pt-line"></div>
+  <div class="pt-item" data-section="scene4" onclick="scrollTo('#scene4')">
+    <div class="pt-dot"></div><span class="pt-label">Hidden Language</span>
+  </div>
+  <div class="pt-line"></div>
+  <div class="pt-item" data-section="scene5" onclick="scrollTo('#scene5')">
+    <div class="pt-dot"></div><span class="pt-label">The Vault</span>
+  </div>
+  <div class="pt-line"></div>
+  <div class="pt-item" data-section="scene6" onclick="scrollTo('#scene6')">
+    <div class="pt-dot"></div><span class="pt-label">The Paperwork</span>
+  </div>
+  <div class="pt-line"></div>
+  <div class="pt-item" data-section="quiz-section" onclick="scrollTo('#quiz-section')">
+    <div class="pt-dot"></div><span class="pt-label">Quiz</span>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="grid-bg"></div>
+  <div class="hero-badge">UC Davis Health · Clinical Informatics</div>
+  <h1 class="hero-title">
+    The Informatics<br/>
+    <span>Journey</span>
+  </h1>
+  <p class="hero-sub">From Patient Click to Clinical Cure — Follow Alex through a UC Davis Health visit and discover how AI, data, and code power modern medicine.</p>
+  <div class="hero-patient">
+    <div class="avatar">🧑‍⚕️</div>
+    <div class="hero-patient-text">
+      <strong>Meet Alex</strong>
+      <span>Our patient · UC Davis Student · Age 22</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    SCROLL TO BEGIN
+  </div>
+</section>
+
+<!-- SCENE 1 -->
+<section class="scene" id="scene1">
+  <div class="scene-inner">
+    <div class="scene-content">
+      <div class="scene-num">Scene 01 <span></span></div>
+      <div class="scene-subtitle">Patient Informatics · NLP Triage · EDI Eligibility</div>
+      <h2 class="scene-title">The <em>Digital</em><br/>Doorway</h2>
+      <p class="scene-body">Alex feels a sharp pain in their side at 11 PM and opens the MyUCDavisHealth app. An AI triage chatbot asks structured questions — not just "what's wrong?" but severity, duration, and location of pain. Using Natural Language Processing, it recommends urgent care instead of the ER, saving both Alex and the hospital time and money.</p>
+      <div class="info-cards">
+        <div class="spotlight-card">
+          <h4>🔬 Informatics Spotlight</h4>
+          <p>The app is not just a website — it's a direct interface into the <strong>Epic EHR</strong>. Every symptom Alex types becomes <em>structured data</em>, not free-form text.</p>
+          <div>
+            <span class="tag">Patient Informatics</span>
+            <span class="tag">NLP</span>
+            <span class="tag">Epic MyChart</span>
+          </div>
+        </div>
+        <div class="ai-card">
+          <h4><div class="ai-dot"></div>AI Logic</h4>
+          <p>Behind the scenes, an <strong>EDI Eligibility Check</strong> (Electronic Data Interchange) pings Alex's insurer in real-time to verify active coverage — before they even set foot in the building.</p>
+        </div>
+      </div>
+    </div>
+    <div class="scene-visual">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="app-logo">MyUCDavis<span>Health</span></div>
+            <div class="app-time">11:08 PM</div>
+          </div>
+          <div class="app-body">
+            <div class="app-greeting">Hello, <span>Alex 👋</span></div>
+            <div class="app-sub">How can we help you tonight?</div>
+            <div class="chat-bubble">
+              <div class="chat-sender">AI TRIAGE BOT</div>
+              I'm here to help assess your symptoms. On a scale of 1–10, how would you rate your pain right now?
+            </div>
+            <div class="chat-bubble user">
+              <div class="chat-sender u">YOU</div>
+              About a 7. Sharp, right side, started 2 hours ago.
+            </div>
+            <div class="chat-bubble">
+              <div class="chat-sender">AI TRIAGE BOT</div>
+              Based on your symptoms, I recommend <strong>Urgent Care</strong> rather than the ER. I can check availability now.
+            </div>
+            <div class="app-alert">
+              <strong>⚡ Insurance Verified <span class="severity-badge">EDI CHECK</span></strong>
+              UC Davis Health Student Plan · Active · $20 copay confirmed
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 2 -->
+<section class="scene" id="scene2">
+  <div class="scene-inner">
+    <div class="scene-visual">
+      <div class="tablet">
+        <div class="tablet-screen">
+          <div class="tablet-hdr">
+            <div class="logo">UCDavis<span>Health</span></div>
+            <div style="margin-left:auto;font-family:'Space Mono',monospace;font-size:.6rem;color:#94a3b8;">Check-In Tablet</div>
+          </div>
+          <div class="t-body">
+            <div class="t-title">Confirm Your Information, Alex</div>
+            <div class="t-field">
+              <label>Current Medications</label>
+              <div class="val confirmed">
+                <span>Ibuprofen (Advil) 400mg</span>
+                <span class="rxnorm-badge">RxNorm: 5640</span>
+              </div>
+            </div>
+            <div class="t-field">
+              <label>Allergies</label>
+              <div class="val confirmed" style="border-color:#f59e0b">
+                <span>Penicillin</span>
+                <span class="rxnorm-badge" style="background:#fffbeb;border-color:#fcd34d;color:#b45309;">SNOMED: 372687004</span>
+              </div>
+            </div>
+            <div class="t-field">
+              <label>Primary Care Provider</label>
+              <div class="val confirmed">
+                <span>Dr. Maria Garcia, MD</span>
+                <span class="chk">✓</span>
+              </div>
+            </div>
+            <div class="t-field">
+              <label>Chief Complaint</label>
+              <div class="val">
+                <span>Acute abdominal pain (RLQ)</span>
+              </div>
+            </div>
+            <div style="margin-top:14px;">
+              <div style="font-size:.65rem;color:#64748b;margin-bottom:4px;">EHR Sync Progress</div>
+              <div class="t-progress"><div class="t-progress-fill"></div></div>
+              <div class="t-status">✓ Single Source of Truth updated — paper records eliminated</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-content">
+      <div class="scene-num">Scene 02 <span></span></div>
+      <div class="scene-subtitle">Data Acquisition · RxNorm · SNOMED CT</div>
+      <h2 class="scene-title">The <em>Smart</em><br/>Check-In</h2>
+      <p class="scene-body">Instead of a clipboard, Alex is handed a tablet. When they select "Advil," the system doesn't just record the word — it encodes the specific <strong>RxNorm code (5640)</strong>, so every computer in the network knows exactly what molecule is in Alex's body. This is the death of the paper record.</p>
+      <div class="info-cards">
+        <div class="spotlight-card">
+          <h4>🔬 Informatics Spotlight</h4>
+          <p>This is <strong>Structured Data Acquisition</strong>. Unstructured text like "Advil" is meaningless to a machine. RxNorm provides a universal code so a lab robot in the basement and a pharmacist in Sacramento speak the same language.</p>
+          <div>
+            <span class="tag">RxNorm</span>
+            <span class="tag">SNOMED CT</span>
+            <span class="tag">EHR Sync</span>
+          </div>
+        </div>
+        <div class="ai-card">
+          <h4><div class="ai-dot"></div>AI Logic</h4>
+          <p>The system uses <strong>auto-complete with coded suggestions</strong> — as Alex types "Ad..." it surfaces "Advil (Ibuprofen 200mg · RxNorm 5640)" rather than free text, ensuring 100% structured capture.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 3 -->
+<section class="scene" id="scene3">
+  <div class="scene-inner">
+    <div class="scene-content">
+      <div class="scene-num">Scene 03 <span></span></div>
+      <div class="scene-subtitle">Ambient AI Scribe · CDS · Drug-Allergy Alerts</div>
+      <h2 class="scene-title">The <em>Augmented</em><br/>Exam</h2>
+      <p class="scene-body">Dr. Garcia walks in — without a laptop. She maintains full eye contact with Alex while an ambient microphone transcribes the conversation in real time. When she prepares to prescribe amoxicillin, the EHR instantly fires a <strong>Clinical Decision Support alert</strong>: Alex is allergic to Penicillin. Amoxicillin is a penicillin-type drug. The AI just prevented a medical error.</p>
+      <div class="info-cards">
+        <div class="spotlight-card">
+          <h4>🔬 Informatics Spotlight</h4>
+          <p><strong>Ambient AI Scribes</strong> (like Nuance DAX or Abridge) convert spoken physician-patient dialogue into a structured clinical note automatically, reducing physician burnout by up to 70%.</p>
+          <div>
+            <span class="tag">Ambient AI</span>
+            <span class="tag">CDS Hooks</span>
+            <span class="tag">Drug-Allergy CDS</span>
+          </div>
+        </div>
+        <div class="ai-card">
+          <h4><div class="ai-dot"></div>AI Logic</h4>
+          <p><strong>CDS Hooks</strong> are real-time triggers. The moment Dr. Garcia opens the prescribe dialog, the EHR fires a "medication-prescribe" hook. The CDS service queries Alex's allergy record and returns a warning within milliseconds.</p>
+        </div>
+      </div>
+    </div>
+    <div class="scene-visual">
+      <div class="exam-visual">
+        <div class="ehr-screen">
+          <div class="ehr-hdr">
+            <h5>Epic EHR — Dr. Garcia View</h5>
+            <span>🔴 LIVE SESSION</span>
+          </div>
+          <div class="ehr-field"><label>Patient</label><div class="val">Alex · DOB 06/14/2003 · MRN 87345</div></div>
+          <div class="ehr-field"><label>Chief Complaint</label><div class="val highlight">Acute RLQ Pain — 7/10 severity</div></div>
+          <div class="ehr-field"><label>BP / HR / Temp</label><div class="val">120/80 · 82 bpm · 98.6°F</div></div>
+          <div class="ehr-field"><label>Draft Rx</label><div class="val" style="color:#fbbf24">Amoxicillin 500mg TID × 7 days</div></div>
+          <div class="mic-indicator">
+            <span class="mic-icon">🎙️</span>
+            <span class="mic-text">Ambient Scribe Active — transcribing...</span>
+            <div class="mic-wave">
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+        <!-- Allergy Popup -->
+        <div class="allergy-popup" id="allergyPopup">
+          <div class="allergy-popup-hdr">
+            <span class="warn-icon">⚠️</span>
+            <h5>CDS Alert — Drug Allergy</h5>
+          </div>
+          <p><span class="drug">Amoxicillin</span> is a penicillin-class antibiotic.<br/>Alex has a documented <span class="drug">Penicillin allergy</span> (SNOMED 372687004).<br/><br/>Risk: Anaphylaxis. Consider azithromycin instead.</p>
+          <button class="allergy-dismiss" onclick="document.getElementById('allergyPopup').style.display='none'">Acknowledge & Review Alternative →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 4 -->
+<section class="scene" id="scene4">
+  <div class="scene-inner">
+    <div class="scene-visual">
+      <div class="fhir-visual">
+        <div class="fhir-node">
+          <span class="icon">🧪</span>
+          <div>
+            <h5>Lab Machine (Basement)</h5>
+            <p>Runs blood test · generates raw result</p>
+          </div>
+        </div>
+        <div class="fhir-connector">
+          <div class="fhir-line"></div>
+          <div class="fhir-plug">🔌</div>
+          <div class="fhir-line"></div>
+        </div>
+        <div class="loinc-box">
+          <div class="row"><span class="k">Protocol</span><span class="v">HL7 FHIR R4</span></div>
+          <div class="row"><span class="k">Test Name</span><span class="v">LOINC: 2345-7 (Glucose)</span></div>
+          <div class="row"><span class="k">Result</span><span class="v">SNOMED: 80394007 (Hyperglycemia)</span></div>
+          <div class="row"><span class="k">Status</span><span class="v" style="color:#10b981">✓ Transmitted</span></div>
+        </div>
+        <div class="fhir-connector">
+          <div class="fhir-line"></div>
+          <div style="font-size:.65rem;color:var(--cyan);font-family:'Space Mono',monospace;white-space:nowrap">FHIR Bundle</div>
+          <div class="fhir-line"></div>
+        </div>
+        <div class="fhir-node">
+          <span class="icon">🖥️</span>
+          <div>
+            <h5>Dr. Garcia's EHR Screen</h5>
+            <p>Receives structured result — no fax, no delay</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-content">
+      <div class="scene-num">Scene 04 <span></span></div>
+      <div class="scene-subtitle">HL7 FHIR · LOINC · SNOMED CT · Interoperability</div>
+      <h2 class="scene-title">The <em>Hidden</em><br/>Language</h2>
+      <p class="scene-body">Alex gets a blood test. The vial goes to the basement lab. For the result to automatically appear on Dr. Garcia's screen — with no fax, no phone call, no delay — the lab machine and the EHR must speak the <em>exact same language</em>. That universal language is <strong>HL7 FHIR</strong>.</p>
+      <div class="info-cards">
+        <div class="spotlight-card">
+          <h4>🔬 Informatics Spotlight</h4>
+          <p><strong>LOINC</strong> gives the test a universal name (like a part number). <strong>SNOMED CT</strong> codes the clinical finding. <strong>HL7 FHIR</strong> is the "USB plug" — the transport protocol that moves the data between any two systems in a standard format.</p>
+          <div>
+            <span class="tag">HL7 FHIR R4</span>
+            <span class="tag">LOINC</span>
+            <span class="tag">SNOMED CT</span>
+            <span class="tag">Interoperability</span>
+          </div>
+        </div>
+        <div class="ai-card">
+          <h4><div class="ai-dot"></div>AI Logic</h4>
+          <p>FHIR's API-first design means <strong>AI models can directly query patient records</strong> from any system. This is what powers third-party health apps — with patient consent — to pull data from any FHIR-compliant EHR.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 5 -->
+<section class="scene" id="scene5">
+  <div class="scene-inner">
+    <div class="scene-content">
+      <div class="scene-num">Scene 05 <span></span></div>
+      <div class="scene-subtitle">Data Warehouse · CDR · Predictive AI · Learning Health System</div>
+      <h2 class="scene-title">The <em>Vault</em></h2>
+      <p class="scene-body">Alex goes home. But their data starts its second life. A <strong>Clinical Data Repository (CDR)</strong> keeps the live record for ongoing care. A <strong>Data Warehouse</strong> stores a de-identified copy alongside thousands of other patients. An AI model running overnight notices that Alex's lab values match a historical pattern seen in pre-sepsis patients — and sends Dr. Garcia a proactive alert the next morning.</p>
+      <div class="info-cards">
+        <div class="spotlight-card">
+          <h4>🔬 Informatics Spotlight</h4>
+          <p>The <strong>Learning Health System</strong> is a loop: patient care generates data → data trains AI → AI improves care → better outcomes generate better data. UC Davis Health's system, <strong>PREDICTOR</strong>, continuously mines the warehouse to catch deteriorating patients.</p>
+          <div>
+            <span class="tag">CDR</span>
+            <span class="tag">Data Warehouse</span>
+            <span class="tag">Learning Health System</span>
+          </div>
+        </div>
+        <div class="ai-card">
+          <h4><div class="ai-dot"></div>AI Logic</h4>
+          <p><strong>Predictive Analytics</strong> models (often XGBoost or neural nets) trained on millions of de-identified records can identify patients at risk for sepsis, readmission, or deterioration <em>before</em> a clinician might notice.</p>
+        </div>
+      </div>
+    </div>
+    <div class="scene-visual">
+      <div class="vault-visual">
+        <div class="vault-ring">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
+          <div class="ring ring-3"></div>
+          <div class="vault-center">
+            <span>🏛️</span>
+            <p>DATA<br/>VAULT</p>
+          </div>
+          <!-- Orbit dots -->
+          <div class="orbit-dot" style="top:5px;left:50%;transform:translateX(-50%)">🧬</div>
+          <div class="orbit-dot" style="bottom:5px;left:50%;transform:translateX(-50%)">📊</div>
+          <div class="orbit-dot" style="top:50%;left:5px;transform:translateY(-50%)">🔬</div>
+          <div class="orbit-dot" style="top:50%;right:5px;transform:translateY(-50%)">🤖</div>
+        </div>
+        <div class="vault-legend">
+          <div class="v-leg">
+            <div class="dot" style="background:var(--cyan)"></div>
+            <p>CDR<br/>Live Care</p>
+          </div>
+          <div class="v-leg">
+            <div class="dot" style="background:var(--gold)"></div>
+            <p>Warehouse<br/>Research</p>
+          </div>
+          <div class="v-leg">
+            <div class="dot" style="background:#10b981"></div>
+            <p>AI Model<br/>Predictions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENE 6 -->
+<section class="scene" id="scene6">
+  <div class="scene-inner">
+    <div class="scene-visual">
+      <div class="billing-visual">
+        <div class="claim-card">
+          <div class="claim-hdr">
+            <h5>📋 Insurance Claim #UC-2024-87345</h5>
+            <span class="status-badge">PAID</span>
+          </div>
+          <div class="claim-body">
+            <div class="code-row">
+              <span class="code-label">ICD-10</span>
+              <span class="code-val">R10.31</span>
+              <span class="code-desc">Right lower quadrant pain</span>
+            </div>
+            <div class="code-row">
+              <span class="code-label">ICD-10</span>
+              <span class="code-val">E11.9</span>
+              <span class="code-desc">Type 2 diabetes (incidental)</span>
+            </div>
+            <div class="code-row">
+              <span class="code-label">CPT</span>
+              <span class="code-val">99214</span>
+              <span class="code-desc">Level 4 Office Visit · 30 min</span>
+            </div>
+            <div class="code-row">
+              <span class="code-label">CPT</span>
+              <span class="code-val">80053</span>
+              <span class="code-desc">Comprehensive Metabolic Panel</span>
+            </div>
+          </div>
+        </div>
+        <div class="claim-card">
+          <div class="claim-hdr">
+            <h5>🔄 Pending Claim #UC-2024-87346</h5>
+            <span class="status-badge pending">REVIEW</span>
+          </div>
+          <div class="claim-body">
+            <div class="code-row">
+              <span class="code-label">ICD-10</span>
+              <span class="code-val">???</span>
+              <span class="code-desc">Insufficient documentation — flagged</span>
+            </div>
+            <div style="font-size:.65rem;color:#f59e0b;margin-top:6px;">⚠ AI flagged: Missing specificity code. Routed to human coder for review.</div>
+          </div>
+        </div>
+        <div class="edi-flow">
+          <span class="edi-icon">🏥</span>
+          <span>UC Davis Health</span>
+          <span class="edi-arrow">──X12 837P──→</span>
+          <span class="edi-icon">🏦</span>
+          <span>Insurer</span>
+          <span class="edi-arrow">←──ERA 835──</span>
+          <span>✓ Paid</span>
+        </div>
+      </div>
+    </div>
+    <div class="scene-content">
+      <div class="scene-num">Scene 06 <span></span></div>
+      <div class="scene-subtitle">Revenue Cycle · ICD-10 · CPT · Medical Coding · EDI</div>
+      <h2 class="scene-title">The <em>Paperwork</em></h2>
+      <p class="scene-body">Two weeks later, the hospital needs to get paid. A medical coder (or AI) translates Dr. Garcia's note into two types of codes: <strong>ICD-10</strong> for the diagnosis (what Alex had) and <strong>CPT</strong> for the service (what was done). These codes are bundled into an electronic claim and transmitted to the insurer via <strong>EDI X12</strong>. If informatics is done right — it's paid automatically. If not, a human steps in.</p>
+      <div class="info-cards">
+        <div class="spotlight-card">
+          <h4>🔬 Informatics Spotlight</h4>
+          <p><strong>ICD-10-CM</strong> has over 70,000 diagnosis codes. <strong>CPT</strong> codes (maintained by the AMA) describe every billable medical service. Accurate coding is crucial — hospitals lose billions annually to coding errors or under-documentation.</p>
+          <div>
+            <span class="tag">ICD-10-CM</span>
+            <span class="tag">CPT Codes</span>
+            <span class="tag">Revenue Cycle</span>
+            <span class="tag">EDI X12 837P</span>
+          </div>
+        </div>
+        <div class="ai-card">
+          <h4><div class="ai-dot"></div>AI Logic</h4>
+          <p><strong>AI-assisted coding</strong> (like 3M CDI or Nuance AI) reads the physician's note, suggests ICD-10/CPT codes with confidence scores, and flags cases where documentation is insufficient before the claim is submitted.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- QUIZ -->
+<section id="quiz-section">
+  <div class="quiz-inner">
+    <div class="quiz-head">
+      <h2>Check for <span>Understanding</span></h2>
+      <p>Three questions to earn your Certified Informaticist badge. Choose wisely — Alex's health depends on it.</p>
+    </div>
+
+    <!-- Q1 -->
+    <div class="q-card" id="q1">
+      <div class="q-num">Question 01 / 03</div>
+      <div class="q-text">Alex selects "Advil" on the check-in tablet and the system stores "RxNorm: 5640." Why is this important in clinical informatics?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answer(this,'q1',false)"><span class="opt-letter">A</span>It helps the hospital bill a higher amount to insurance.</div>
+        <div class="q-option" onclick="answer(this,'q1',true)"><span class="opt-letter">B</span>It converts unstructured text into structured, machine-readable data that any system can interpret.</div>
+        <div class="q-option" onclick="answer(this,'q1',false)"><span class="opt-letter">C</span>It allows the patient to order the medication from the pharmacy directly.</div>
+        <div class="q-option" onclick="answer(this,'q1',false)"><span class="opt-letter">D</span>It replaces the need for a physician to review the medication list.</div>
+      </div>
+      <div class="q-feedback" id="q1-fb"></div>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card" id="q2">
+      <div class="q-num">Question 02 / 03</div>
+      <div class="q-text">Dr. Garcia receives a pop-up warning when prescribing amoxicillin to Alex. What is the correct informatics term for this type of real-time alert?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answer(this,'q2',false)"><span class="opt-letter">A</span>FHIR Resource Bundle</div>
+        <div class="q-option" onclick="answer(this,'q2',false)"><span class="opt-letter">B</span>ICD-10 Code Trigger</div>
+        <div class="q-option" onclick="answer(this,'q2',true)"><span class="opt-letter">C</span>Clinical Decision Support (CDS) Hook</div>
+        <div class="q-option" onclick="answer(this,'q2',false)"><span class="opt-letter">D</span>EDI X12 Eligibility Check</div>
+      </div>
+      <div class="q-feedback" id="q2-fb"></div>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card" id="q3">
+      <div class="q-num">Question 03 / 03</div>
+      <div class="q-text">When Alex's hospital bill is processed, the code "R10.31" is used. Which coding system does this belong to, and what does it represent?</div>
+      <div class="q-options">
+        <div class="q-option" onclick="answer(this,'q3',false)"><span class="opt-letter">A</span>CPT — it describes the service provided to Alex.</div>
+        <div class="q-option" onclick="answer(this,'q3',false)"><span class="opt-letter">B</span>LOINC — it names the laboratory test performed.</div>
+        <div class="q-option" onclick="answer(this,'q3',false)"><span class="opt-letter">C</span>RxNorm — it codes the medication prescribed.</div>
+        <div class="q-option" onclick="answer(this,'q3',true)"><span class="opt-letter">D</span>ICD-10-CM — it codes Alex's diagnosis (right lower quadrant pain).</div>
+      </div>
+      <div class="q-feedback" id="q3-fb"></div>
+    </div>
+
+    <!-- Badge -->
+    <div id="badge-section">
+      <div class="badge-container">
+        <div class="badge-hex">
+          <div class="badge-inner">
+            <span>🏆</span>
+            <p>Certified<br/>Informaticist</p>
+          </div>
+        </div>
+        <div class="badge-stars">⭐⭐⭐</div>
+        <div class="badge-title">Certified Informaticist</div>
+        <div class="badge-sub">You've successfully completed The Informatics Journey.</div>
+        <div class="quiz-score" id="quiz-score-display"></div>
+        <button class="quiz-cta" onclick="resetQuiz()">🔄 Try Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>Built for <span>Clinical Informatics Education</span> · UC Davis Health · <span>HIMT / BMI Curriculum</span></p>
+  <p style="margin-top:6px;opacity:.5">Educational content only — not clinical advice</p>
+</footer>
+
+<script>
+  // ── SCROLL INTO VIEW ─────────────────────────────────
+  function scrollTo(id) {
+    document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // ── PROGRESS TRACKER ─────────────────────────────────
+  const sections = ['hero','scene1','scene2','scene3','scene4','scene5','scene6','quiz-section'];
+  const ptItems = document.querySelectorAll('.pt-item');
+  const ptLines = document.querySelectorAll('.pt-line');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = sections.indexOf(entry.target.id);
+        ptItems.forEach((item, i) => {
+          item.classList.toggle('active', i === idx);
+        });
+        ptLines.forEach((line, i) => {
+          line.classList.toggle('filled', i < idx);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+
+  sections.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) observer.observe(el);
+  });
+
+  // ── SCENE CONTENT ANIMATION ──────────────────────────
+  const animObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in');
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll('.scene-content, .scene-visual').forEach(el => {
+    animObserver.observe(el);
+  });
+
+  // Quiz cards
+  const qObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) entry.target.classList.add('visible');
+    });
+  }, { threshold: 0.2 });
+  document.querySelectorAll('.q-card').forEach(el => qObserver.observe(el));
+
+  // ── QUIZ LOGIC ────────────────────────────────────────
+  let scores = { q1: null, q2: null, q3: null };
+  const feedbacks = {
+    q1: {
+      correct: "Correct! RxNorm transforms free-form drug names into universal numeric codes. 'Advil', 'ibuprofen', and '5640' all refer to the same molecule — only the code is machine-readable across systems.",
+      wrong: "Not quite. RxNorm codes solve the interoperability problem: the word 'Advil' means nothing to a pharmacy robot in Sacramento, but RxNorm code 5640 does."
+    },
+    q2: {
+      correct: "Correct! CDS Hooks are event-driven triggers in the EHR workflow. When a 'medication-prescribe' event fires, the CDS service queries allergy records and injects the alert in real-time.",
+      wrong: "Not quite. This is a Clinical Decision Support (CDS) Hook — a real-time alert triggered by a workflow event in the EHR to prevent clinical errors."
+    },
+    q3: {
+      correct: "Correct! ICD-10-CM (International Classification of Diseases, 10th revision) is the U.S. standard for coding diagnoses. R10.31 = Right lower quadrant pain. This code is what the hospital sends to the insurer to justify the visit.",
+      wrong: "Not quite. R10.31 is an ICD-10-CM code — it represents the diagnosis (what Alex had). CPT codes (like 99214) represent the service performed."
+    }
+  };
+
+  function answer(el, qId, isCorrect) {
+    if (scores[qId] !== null) return;
+    scores[qId] = isCorrect;
+
+    const options = el.parentElement.querySelectorAll('.q-option');
+    options.forEach(opt => opt.classList.add('disabled'));
+    el.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    const fb = document.getElementById(qId + '-fb');
+    fb.textContent = isCorrect ? '✓ ' + feedbacks[qId].correct : '✗ ' + feedbacks[qId].wrong;
+    fb.className = 'q-feedback show ' + (isCorrect ? 'correct' : 'wrong');
+
+    checkAllAnswered();
+  }
+
+  function checkAllAnswered() {
+    if (Object.values(scores).every(s => s !== null)) {
+      setTimeout(() => {
+        const correct = Object.values(scores).filter(Boolean).length;
+        document.getElementById('quiz-score-display').textContent = `Score: ${correct}/3 — ${correct === 3 ? 'Perfect!' : correct === 2 ? 'Great job!' : 'Keep studying!'}`;
+        document.getElementById('badge-section').classList.add('show');
+        document.getElementById('badge-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 800);
+    }
+  }
+
+  function resetQuiz() {
+    scores = { q1: null, q2: null, q3: null };
+    document.querySelectorAll('.q-option').forEach(opt => {
+      opt.classList.remove('correct','wrong','disabled');
+    });
+    document.querySelectorAll('.q-feedback').forEach(fb => {
+      fb.className = 'q-feedback';
+      fb.textContent = '';
+    });
+    document.getElementById('badge-section').classList.remove('show');
+    document.getElementById('quiz-section').scrollIntoView({ behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
